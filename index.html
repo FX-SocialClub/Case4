@@ -106,14 +106,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;ali
 .p-ring:nth-child(2){animation-delay:1.3s}
 .p-ring:nth-child(3){animation-delay:2.6s}
 @keyframes pring{0%{width:100px;height:100px;opacity:.7}100%{width:520px;height:520px;opacity:0}}
-#cup-canvas{width:340px;height:480px;display:block;position:relative;z-index:2;animation:cupAnim 7s linear infinite;filter:drop-shadow(0 30px 70px rgba(200,120,30,0.28))}
-@keyframes cupAnim{
-  0%  {transform:rotateY(0deg)   translateY(0px)   scale(1)}
-  25% {transform:rotateY(90deg)  translateY(-14px) scale(1.025)}
-  50% {transform:rotateY(180deg) translateY(0px)   scale(1)}
-  75% {transform:rotateY(270deg) translateY(-10px) scale(1.02)}
-  100%{transform:rotateY(360deg) translateY(0px)   scale(1)}
-}
+#cup-video{width:340px;height:480px;display:block;position:relative;z-index:2;filter:drop-shadow(0 30px 70px rgba(200,120,30,0.28));object-fit:contain;background:transparent;mix-blend-mode:screen}
 
 /* ── DATA CHIPS ── */
 .chips-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:32px;opacity:0;transition:opacity .9s .7s;position:relative;z-index:1}
@@ -271,7 +264,7 @@ footer{padding:48px;border-top:1px solid var(--border);display:flex;justify-cont
   .nav-links,.nav-cta{display:none}
   .burger{display:flex}
   .hero{padding:100px 20px 60px}
-  #cup-canvas{width:260px;height:380px}
+  #cup-video{width:260px;height:380px}
   .cup-stage{width:260px;height:380px;margin-top:40px}
   .stats-bar{padding:28px 20px;gap:0;flex-wrap:wrap;justify-content:center}
   .stat{padding:20px 28px;border-right:none;border-bottom:1px solid var(--border)}
@@ -348,7 +341,7 @@ footer{padding:48px;border-top:1px solid var(--border);display:flex;justify-cont
   <div class="cup-stage" id="cupStage">
     <div class="cup-glow"></div>
     <div class="cup-rings"><div class="p-ring"></div><div class="p-ring"></div><div class="p-ring"></div></div>
-    <canvas id="cup-canvas" style="perspective:1000px"></canvas>
+    <video id="cup-video" src="cup.mp4" loop muted playsinline preload="auto"></video>
   </div>
   <div class="chips-row" id="chipsRow">
     <div class="chip">✦ Арабіка 100%</div>
@@ -558,8 +551,9 @@ footer{padding:48px;border-top:1px solid var(--border);display:flex;justify-cont
 </footer>
 
 <script>
-// ── HAND-DRAWN ICED COFFEE CUP ──
+// ── HAND-DRAWN ICED COFFEE CUP (disabled — replaced by video) ──
 (function(){
+  return;
   const canvas=document.getElementById('cup-canvas');
   const ctx=canvas.getContext('2d');
   const CW=340,CH=480;
@@ -591,6 +585,21 @@ footer{padding:48px;border-top:1px solid var(--border);display:flex;justify-cont
   function drawCoffeeSurface(){ctx.save();const y=topY+32,iR=topR-7;ctx.beginPath();ctx.ellipse(cx,y,iR,7,0,0,Math.PI*2);const sg=ctx.createRadialGradient(cx-iR*.2,y,0,cx,y,iR);sg.addColorStop(0,'rgba(212,128,50,0.92)');sg.addColorStop(.6,'rgba(188,95,28,0.85)');sg.addColorStop(1,'rgba(155,65,15,0.7)');ctx.fillStyle=sg;ctx.fill();ctx.restore();}
   function render(ts){requestAnimationFrame(render);const t=ts/1000;ctx.clearRect(0,0,CW,CH);drawCoffee();drawIce(t);drawWalls();drawRibs();drawLid();drawCoffeeSurface();drawStraw();drawCondensation(t);drawReflection();}
   requestAnimationFrame(render);
+})();
+
+// ── CUP VIDEO: play only while mouse moves over the block ──
+(function(){
+  const stage=document.getElementById('cupStage');
+  const video=document.getElementById('cup-video');
+  if(!stage||!video)return;
+  let timer=null;
+  video.pause();
+  const pauseSoon=()=>{clearTimeout(timer);timer=setTimeout(()=>video.pause(),90);};
+  stage.addEventListener('mousemove',()=>{
+    if(video.paused){const p=video.play();if(p&&p.catch)p.catch(()=>{});}
+    pauseSoon();
+  });
+  stage.addEventListener('mouseleave',()=>{clearTimeout(timer);video.pause();});
 })();
 
 // ── CURSOR ──
